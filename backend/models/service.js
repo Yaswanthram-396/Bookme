@@ -23,6 +23,16 @@ const serviceSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    bufferBefore: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    bufferAfter: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     description: {
       type: String,
       trim: true,

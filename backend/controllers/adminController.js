@@ -5,7 +5,7 @@ import Booking from "../models/Booking.js";
 import User from "../models/User.js";
 
 const createAdminToken = (email) => {
-  return jwt.sign({ email, role: "admin" }, process.env.JWT_SECRET, {
+  return jwt.sign({ email, role: "admin" }, process.env.ADMIN_JWT_SECRET, {
     expiresIn: "1d",
   });
 };
@@ -84,12 +84,12 @@ export const getAdminDashboard = async (req, res) => {
   try {
     const [users, summary, recentBookings] = await Promise.all([
       User.find()
-        .select("username email businessName slug payoutDetails createdAt")
+        .select("name email businessName slug payoutDetails createdAt")
         .sort({ createdAt: -1 })
         .limit(100),
       getAdminSummary(),
       Booking.find()
-        .populate("userId", "username email businessName")
+        .populate("userId", "name email businessName")
         .populate("serviceId", "name")
         .sort({ createdAt: -1 })
         .limit(10),

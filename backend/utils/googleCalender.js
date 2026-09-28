@@ -7,9 +7,10 @@ export const getOAuthClient = () => {
     process.env.GOOGLE_CLIENT_SECRET,
     process.env.GOOGLE_REDIRECT_URL,
   );
+  return oAuth2Client;
 };
 
-export const getGoogleAuthUrl = () => {
+export const getGoogleAuthUrl = (userId) => {
   const oAuth2Client = getOAuthClient();
   return oAuth2Client.generateAuthUrl({
     access_type: "offline",

@@ -1,37 +1,51 @@
-import bcypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import EmailOtp from "../models/Emailotp.js";
 import { sendOtpNotification } from "./bookingNotification.js";
-import { normalize } from "path";
+
 const OTP_TTL_MINUTES = 10;
 const MAX_ATTEMPTS = 5;
-const normalizedEmail = (email = "") => email.toLowerCase().trim();
+const normalizeEmail = (email = "") => email.toLowerCase().trim();
 
 const createCode = () => crypto.randomInt(100000, 1000000).toString();
+
 export const requestEmailOtp = async ({ email, purpose }) => {
-  const normalizedEmail = normalizedEmail(email);
-  if (!normalizedEmail) {
+  const normalized = normalizeEmail(email);
+  if (!normalized) {
     throw new Error("Email is required");
   }
   const code = createCode();
   const codeHash = await bcrypt.hash(code, 10);
   const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000);
   await EmailOtp.deleteMany({
-    email: normalizedEmail,
+    email: normalized,
     purpose,
-    consumeAt: null,
+    consumedAt: null,
   });
   await EmailOtp.create({
-    email: normalizedEmail,
+    email: normalized,
     purpose,
     codeHash,
     expiresAt,
-    I,
   });
-  await sendOtpNotification({ email: normalizedEmail, code, purpose });
+
+  let emailDelivered = true;
+  try {
+    await sendOtpNotification({ email: normalized, code, purpose });
+  } catch (sendError) {
+    if (process.env.NODE_ENV === "production") {
+      throw sendError;
+    }
+    emailDelivered = false;
+    console.warn(
+      `[dev] Email delivery failed (${sendError.message}). OTP for ${normalized} (${purpose}): ${code}`,
+    );
+  }
+
   return {
     sent: true,
-    email: normalizedEmail,
+    emailDelivered,
+    email: normalized,
     expiresInMinutes: OTP_TTL_MINUTES,
   };
 };
@@ -42,35 +56,34 @@ export const verifyEmailOtp = async ({
   code,
   consume = false,
 }) => {
-  const normalizedEmail = normalizedEmail(email);
-  if (!normalizedEmail || !code) {
+  const normalized = normalizeEmail(email);
+  if (!normalized || !code) {
     return { verified: false, reason: "Email and OTP are required" };
   }
   const record = await EmailOtp.findOne({
-    email: normalizedEmail,
+    email: normalized,
     purpose,
-    consumeAt: null,
-    expireAt: { $gt: new Date() },
+    consumedAt: null,
+    expiresAt: { $gt: new Date() },
   }).sort({ createdAt: -1 });
   if (!record) {
     return { verified: false, reason: "OTP expired or not found" };
   }
-  I;
   if (record.attempts >= MAX_ATTEMPTS) {
     return {
       verified: false,
-      reason: "Too many OTP attemps. Requested a new code.",
+      reason: "Too many OTP attempts. Request a new code.",
     };
   }
   const isMatch = await bcrypt.compare(String(code).trim(), record.codeHash);
   if (!isMatch) {
     record.attempts += 1;
     await record.save();
-    return { verified: false, reson: "Invalid OTP" };
+    return { verified: false, reason: "Invalid OTP" };
   }
   if (consume) {
-    record.consumeAt = new Date();
+    record.consumedAt = new Date();
     await record.save();
   }
-  return { verified: true, email: normalizedEmail };
+  return { verified: true, email: normalized };
 };

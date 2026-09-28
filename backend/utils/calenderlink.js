@@ -1,11 +1,11 @@
-const toGoogleDateTime = (date) => {
-  return `${data.replaceAll("-", "")}T${time.replace(":", "")}00`;
+const toGoogleDateTime = (date, time) => {
+  return `${date.replaceAll("-", "")}T${time.replace(":", "")}00`;
 };
 
 export const buildCustomerCalenderUrl = ({ business, service, booking }) => {
   const params = new URLSearchParams({
     action: "TEMPLATE",
-    text: `${service.name} with ${business.name}||${business.businessName}`,
+    text: `${service.name} with ${business.businessName || business.name}`,
     dates: `${toGoogleDateTime(booking.date, booking.startTime)}/${toGoogleDateTime(booking.date, booking.endTime)}`,
     details:
       booking.notes ||

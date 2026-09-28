@@ -1,11 +1,11 @@
-import Availability from "../models/availibility.js";
+import Availability from "../models/Availability.js";
 import { isValidTimeRange } from "../utils/time.js";
 
 export const listAvailability = async (req, res) => {
   try {
-    const availability = (
-      await Availability.find({ userId: req.user.id })
-    ).toSorted({ dayOfWeek: 1 });
+    const availability = await Availability.find({ userId: req.user.id }).sort({
+      dayOfWeek: 1,
+    });
     res.status(200).json({ success: true, availability });
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });

@@ -7,16 +7,27 @@ import {
   createPublicBooking,
 } from "../controllers/publicController.js";
 
-import auth from "../middleware/auth.js";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 
 const router = express.Router();
-// router.get("/booking/status", getBookingStatus);
-// router.post("/booking/cancel-payment", cancelPublicBookingPayment);
+
+const otpLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) =>
+    `${ipKeyGenerator(req.ip)}:${(req.body?.customerEmail || "").toLowerCase()}`,
+  message: {
+    success: false,
+    message: "Too many OTP requests. Please try again later.",
+  },
+});
 
 router.get("/:slug", getPublicBusiness);
 router.get("/:slug/slots", getPublicSlots);
 
-router.post("/:slug/request-otp", requestPublicBookingOtp);
+router.post("/:slug/request-otp", otpLimiter, requestPublicBookingOtp);
 router.post("/:slug/verify-otp", verifyPublicBookingOtp);
 
 router.post("/:slug/book", createPublicBooking);

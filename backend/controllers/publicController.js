@@ -71,7 +71,7 @@ export const getPublicSlots = async (req, res) => {
     if (!bisiness) {
       return res.status(404).json({ message: "Business not found" });
     }
-    const service = await Service.findById({
+    const service = await Service.findOne({
       _id: serviceId,
       userId: bisiness._id,
       isDeleted: { $ne: true },
@@ -224,22 +224,32 @@ export const createPublicBooking = async (req, res) => {
       },
     });
 
-    const booking = await Booking.create({
-      userId: business._id,
-      serviceId,
-      customerName,
-      customerEmail: normalizedCustomerEmail,
-      customerAvatar: customerAvatar || "A1.png",
-      date,
-      startTime,
-      endTime,
-      notes: notes || "",
-      amount: 0,
-      payoutStatus: "not_required",
-      paymentStatus: "not_required",
-      status: "confirmed",
-      customerCalendarUrl,
-    });
+    let booking;
+    try {
+      booking = await Booking.create({
+        userId: business._id,
+        serviceId,
+        customerName,
+        customerEmail: normalizedCustomerEmail,
+        customerAvatar: customerAvatar || "A1.png",
+        date,
+        startTime,
+        endTime,
+        notes: notes || "",
+        amount: 0,
+        payoutStatus: "not_required",
+        paymentStatus: "not_required",
+        status: "confirmed",
+        customerCalendarUrl,
+      });
+    } catch (createError) {
+      if (createError.code === 11000) {
+        return res
+          .status(409)
+          .json({ message: "That slot is no longer available" });
+      }
+      throw createError;
+    }
 
     try {
       const calendarResult = await createBookingCalendarEvent({

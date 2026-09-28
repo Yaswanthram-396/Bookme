@@ -1,18 +1,7 @@
-import Availability from "../models/availibility.js";
+import Availability from "../models/Availability.js";
 import { timeOverlap } from "./overlap.js";
 import Booking from "../models/Booking.js";
-import { getDayOfWeek } from "./time.js";
-
-const formatTime = (value) => {
-  if (value instanceof Date) {
-    return `${value.getUTCHours().toString().padStart(2, "0")}:${value
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, "0")}`;
-  }
-
-  return String(value).slice(0, 5);
-};
+import { getDayOfWeek, timeToMinutes, minutesToTime } from "./time.js";
 
 export const generateSlots = async (userId, service, date) => {
   const dayOfWeek = getDayOfWeek(date);
@@ -21,26 +10,57 @@ export const generateSlots = async (userId, service, date) => {
     if (!availability || !availability.slot.length) {
       return [];
     }
+
     const bookings = await Booking.find({
       userId,
       date,
       status: "confirmed",
     });
-    const slots = availability.slot
-      .map((slot) => ({
-        startTime: formatTime(slot.startTime),
-        endTime: formatTime(slot.endTime),
-      }))
-      .filter((slot) => {
-        return !bookings.some((booking) =>
+
+    const duration = service.duration;
+    const bufferBefore = service.bufferBefore || 0;
+    const bufferAfter = service.bufferAfter || 0;
+    const step = duration + bufferBefore + bufferAfter;
+
+    const now = new Date();
+    const isToday = date === now.toISOString().slice(0, 10);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const slots = [];
+    for (const window of availability.slot) {
+      const windowStart = timeToMinutes(window.startTime);
+      const windowEnd = timeToMinutes(window.endTime);
+
+      for (
+        let slotStart = windowStart;
+        slotStart + duration <= windowEnd;
+        slotStart += step
+      ) {
+        const bufferedStart = slotStart - bufferBefore;
+        const bufferedEnd = slotStart + duration + bufferAfter;
+        if (bufferedStart < windowStart || bufferedEnd > windowEnd) continue;
+
+        const slotEnd = slotStart + duration;
+        if (isToday && slotStart <= nowMinutes) continue;
+
+        const startTime = minutesToTime(slotStart);
+        const endTime = minutesToTime(slotEnd);
+
+        const hasConflict = bookings.some((booking) =>
           timeOverlap(
-            slot.startTime,
-            slot.endTime,
+            minutesToTime(bufferedStart),
+            minutesToTime(bufferedEnd),
             booking.startTime,
             booking.endTime,
           ),
         );
-      });
+
+        if (!hasConflict) {
+          slots.push({ startTime, endTime });
+        }
+      }
+    }
+
     return slots;
   } catch (error) {
     console.log(error);

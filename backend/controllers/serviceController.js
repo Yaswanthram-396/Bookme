@@ -2,9 +2,10 @@ import Service from "../models/service.js";
 
 export const listService = async (req, res) => {
   try {
-    const services = (
-      await Service.find({ userId: req.user.id, isDeleted: { $ne: true } })
-    ).toSorted({ createdAt: -1 });
+    const services = await Service.find({
+      userId: req.user.id,
+      isDeleted: { $ne: true },
+    }).sort({ createdAt: -1 });
     res.status(200).json({ success: true, services });
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });
@@ -13,7 +14,15 @@ export const listService = async (req, res) => {
 
 export const createService = async (req, res) => {
   try {
-    const { name, duration, price, description, icon } = req.body;
+    const {
+      name,
+      duration,
+      price,
+      description,
+      icon,
+      bufferBefore,
+      bufferAfter,
+    } = req.body;
     if (!name || !duration) {
       return res
         .status(400)
@@ -25,6 +34,8 @@ export const createService = async (req, res) => {
       price,
       description,
       icon: icon || "default-icon.png",
+      bufferBefore: bufferBefore || 0,
+      bufferAfter: bufferAfter || 0,
       userId: req.user.id,
     });
     res.status(201).json({ success: true, service });
@@ -43,6 +54,8 @@ export const updateService = async (req, res) => {
       "description",
       "isActive",
       "icon",
+      "bufferBefore",
+      "bufferAfter",
     ];
 
     allowedFields.forEach((field) => {

@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 const UsersSchema = new mongoose.Schema(
   {
-    username: {
+    name: {
       type: String,
       required: true,
-      unique: true,
+      trim: true,
     },
     email: {
       type: String,
@@ -29,19 +29,21 @@ const UsersSchema = new mongoose.Schema(
     businessName: {
       type: String,
       default: "",
-      required: true,
       trim: true,
     },
     businessDescription: {
       type: String,
       default: "",
-      required: true,
       trim: true,
     },
     brandTheme: {
       type: String,
       enum: ["light", "dark"],
       default: "light",
+    },
+    brandAccent: {
+      type: String,
+      default: "#7D57F5",
     },
     timezone: {
       type: String,
@@ -102,6 +104,6 @@ const UsersSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const Users = mongoose.model("Users", UsersSchema);
+const Users = mongoose.model("User", UsersSchema);
 
 export default Users;

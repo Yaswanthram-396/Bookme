@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
-const auth = async (req, res) => {
-  const authheader = req.header.authorization;
+const auth = async (req, res, next) => {
+  const authheader = req.headers.authorization;
   if (!authheader) {
     return res.status(401).json({
       message: "no token provider",

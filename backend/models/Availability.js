@@ -3,11 +3,11 @@ import mongoose from "mongoose";
 const slotSchema = new mongoose.Schema(
   {
     startTime: {
-      type: Date,
+      type: String,
       required: true,
     },
     endTime: {
-      type: Date,
+      type: String,
       required: true,
     },
   },

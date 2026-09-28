@@ -5,6 +5,7 @@ import availabilityRoutes from "./avalibilityroute.js";
 import integrationRoutes from "./integrationroutes.js";
 import publicRoutes from "./publicroutes.js";
 import adminRoutes from "./adminRoutes.js";
+import bookingRoutes from "./bookingroutes.js";
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.use("/integrations", integrationRoutes);
 router.use("/public", publicRoutes);
 
 router.use("/admin", adminRoutes);
+router.use("/bookings", bookingRoutes);
 
 export default router;

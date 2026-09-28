@@ -66,9 +66,11 @@ export const registerUser = async (req, res) => {
       timezone: timezone || "Asia/Kolkata",
     });
     const token = createToken(user);
+    const userObj = user.toObject();
+    delete userObj.password;
     res
       .status(201)
-      .json({ message: "User registered successfully", user, token });
+      .json({ message: "User registered successfully", user: userObj, token });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -101,9 +103,9 @@ export const requestRegistrationOtp = async (req, res) => {
 
 export const verifyRegistrationOtp = async (req, res) => {
   try {
-    const { email, emilOtp } = req.body;
+    const { email, emailOtp } = req.body;
     const normalizedEmail = email.toLowerCase().trim();
-    if (!normalizedEmail || !emilOtp) {
+    if (!normalizedEmail || !emailOtp) {
       return res.status(400).json({ message: "Email and OTP are required" });
     }
     const existingUser = await Users.findOne({ email: normalizedEmail });
@@ -113,8 +115,8 @@ export const verifyRegistrationOtp = async (req, res) => {
     const otpResponse = await verifyEmailOtp({
       email: normalizedEmail,
       purpose: "register",
-      code: emilOtp,
-      consume: true,
+      code: emailOtp,
+      consume: false,
     });
     if (!otpResponse.verified) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
@@ -130,11 +132,15 @@ export const verifyRegistrationOtp = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const normalizedEmail = email.toLowerCase().trim();
-    if (!normalizedEmail || !emilOtp) {
-      return res.status(400).json({ message: "Email and OTP are required" });
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
-    const existingUser = await Users.findOne({ email: normalizedEmail });
+    const normalizedEmail = email.toLowerCase().trim();
+    const existingUser = await Users.findOne({ email: normalizedEmail }).select(
+      "+password",
+    );
     if (!existingUser) {
       return res.status(400).json({ message: "User Not Found" });
     }
@@ -143,13 +149,15 @@ export const loginUser = async (req, res) => {
     if (!ismatch) {
       return res.status(401).json({ message: "Password incorrect" });
     }
-    const token = createToken(existingUser._id);
+    const token = createToken(existingUser);
+    const userObj = existingUser.toObject();
+    delete userObj.password;
     res.status(200).json({
       message: "Logged in success",
       token,
-      existingUser,
+      user: userObj,
     });
-  } catch (e) {
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
@@ -166,63 +174,64 @@ export const getMe = async (req, res) => {
       message: "User found successfully",
       data: user,
     });
-  } catch (e) {
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 export const updateProfile = async (req, res) => {
-  const {
-    name,
-    businessName,
-    businessDescription,
-    timezone,
-    brandTheme,
-    brandAccent,
-  } = req.body;
+  try {
+    const {
+      name,
+      businessName,
+      businessDescription,
+      timezone,
+      brandTheme,
+      brandAccent,
+    } = req.body;
 
-  const user = await Users.findById(req.user.id);
+    const user = await Users.findById(req.user.id);
 
-  if (!user) {
-    return res.status(404).json({ message: "No user Found" });
-  }
+    if (!user) {
+      return res.status(404).json({ message: "No user Found" });
+    }
 
-  if (name !== undefined) {
-    user.name = name;
-  }
-  if (businessName !== undefined) {
-    user.businessName = businessName;
-  }
-  if (businessDescription !== undefined) {
-    user.businessDescription = businessDescription;
-  }
-  if (timezone !== undefined) {
-    user.timezone = timezone;
-  }
-  if (brandTheme !== undefined) {
-    user.brandTheme = brandTheme;
-  }
-  if (brandAccent !== undefined) {
-    user.brandAccent = brandAccent;
-  }
-  const slug = slugify(name);
+    if (name !== undefined) {
+      user.name = name;
+    }
+    if (businessDescription !== undefined) {
+      user.businessDescription = businessDescription;
+    }
+    if (timezone !== undefined) {
+      user.timezone = timezone;
+    }
+    if (brandTheme !== undefined) {
+      user.brandTheme = brandTheme;
+    }
+    if (brandAccent !== undefined) {
+      user.brandAccent = brandAccent;
+    }
 
-  const baseSlug = slugify(businessName) || slug || "business";
-  let finalSlug = baseSlug;
-  let counter = 1;
+    if (businessName !== undefined && businessName !== user.businessName) {
+      user.businessName = businessName;
+      const baseSlug = slugify(businessName) || slugify(user.name) || "business";
+      let finalSlug = baseSlug;
+      let counter = 1;
+      while (
+        await Users.findOne({ slug: finalSlug, _id: { $ne: user._id } })
+      ) {
+        finalSlug = `${baseSlug}-${counter}`;
+        counter += 1;
+      }
+      user.slug = finalSlug;
+    }
 
-  while (await Users.findOne({ slug: finalSlug })) {
-    finalSlug = `${baseSlug}-${counter}`;
-    counter += 1;
-  }
-  user.slug = finalSlug;
-  const updatedUser = await user.save();
-  if (updatedUser) {
+    const updatedUser = await user.save();
     return res.status(200).json({
       message: "User updated successfully",
       data: updatedUser,
     });
-  } else {
-    return res.status(500).json({ message: "Failed to update user" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
