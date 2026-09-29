@@ -1,7 +1,7 @@
 import axios, { type AxiosResponse } from "axios";
 
 const client = axios.create({
-  baseURL: import.meta.env.REACT_APP_API_URL || "http://localhost:3001/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
 });
 
 client.interceptors.request.use((res) => {
@@ -21,7 +21,7 @@ const persistTokenFromResponse = (res: AxiosResponse) => {
 };
 
 client.interceptors.response.use(persistTokenFromResponse, (error) => {
-  if (error.res?.status === 401 && localStorage.getItem("token")) {
+  if (error.response?.status === 401 && localStorage.getItem("token")) {
     localStorage.removeItem("token");
     window.location.assign("/login");
   }

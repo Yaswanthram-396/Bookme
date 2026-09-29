@@ -30,10 +30,10 @@ const AuthPage = () => {
   const [message, setMessage] = useState("");
   const [otpCooldown, setOtpCooldown] = useState(0);
   const isRegisterMode = mode === "register";
-  const fromLocation = location.state?.from || "/dashboard";
+  const fromLocation = location.state?.from;
   const redirectTo = fromLocation
     ? `${fromLocation.pathname}${fromLocation.search || ""}`
-    : "/profile";
+    : "/";
 
   useEffect(() => {
     if (otpCooldown <= 0) return;
@@ -89,11 +89,15 @@ const AuthPage = () => {
     setOtpLoading(true);
     setMessage("");
     try {
-      await requestRegistrationOtp(form.email);
+      const { data } = await requestRegistrationOtp(form.email);
       setOtpSentTo(form.email.trim().toLowerCase());
       setOtpVerified(false);
       setOtpCooldown(30);
-      setMessage(`OTP sent to ${form.email}. Please check your email.`);
+      setMessage(
+        data?.otpResponse?.emailDelivered === false
+          ? "Email delivery isn't configured — check the backend server console for your OTP code."
+          : `OTP sent to ${form.email}. Please check your email.`,
+      );
     } catch (err) {
       setMessage(err.response?.data?.message || "Failed to send OTP");
     } finally {
@@ -106,7 +110,7 @@ const AuthPage = () => {
     setMessage("");
     try {
       const payload = isRegisterMode
-        ? form
+        ? { ...form, emailOtp: form.otp }
         : { email: form.email, password: form.password };
       const { data } = await (isRegisterMode
         ? register(payload)

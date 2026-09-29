@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import logo from "../assets/logo.png";
+import logo from "../../assets/logo.png";
 import { getme } from "../api/auth";
 
 const navItems = [
@@ -215,7 +215,7 @@ export default function AppLayout({ children }) {
     if (hasToken) {
       getme()
         .then((res) => {
-          setUser(res.data);
+          setUser(res.data.data);
         })
         .catch((err) => {
           console.log(err);
@@ -228,7 +228,7 @@ export default function AppLayout({ children }) {
     navigate("/login");
   };
 
-  const displayName = user?.bussinessName || user?.name || "My Business";
+  const displayName = user?.businessName || user?.name || "My Business";
   const avatarInitial = displayName.slice(0, 1).toUpperCase();
 
   return (
