@@ -19,7 +19,7 @@ const emptyForm = {
 };
 
 const inputClass =
-  "w-full h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-[14px] text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100";
+  "premium-input w-full";
 
 export default function ServicesPage() {
   const { showToast } = useToast() || {};
@@ -137,16 +137,16 @@ export default function ServicesPage() {
           <button
             type="button"
             onClick={openCreate}
-            className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(99,102,241,0.25)] transition hover:opacity-95"
+            className="premium-btn-primary text-sm px-4 py-2"
           >
-            <Plus className="h-4 w-4" /> Add service
+            <Plus className="h-4 w-4 mr-2" /> Add service
           </button>
         </div>
 
         {loading ? (
           <p className="text-sm text-slate-500">Loading...</p>
         ) : services.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 py-16 text-center">
+          <div className="premium-card border-dashed bg-transparent py-16 text-center shadow-none">
             <p className="text-sm text-slate-500">
               No services yet. Add your first one to start accepting bookings.
             </p>
@@ -156,7 +156,7 @@ export default function ServicesPage() {
             {services.map((service) => (
               <div
                 key={service._id}
-                className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]"
+                className="premium-card flex items-center justify-between p-5"
               >
                 <div>
                   <div className="flex items-center gap-2.5">
@@ -295,7 +295,7 @@ export default function ServicesPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="mt-2 h-11 w-full rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(99,102,241,0.25)] transition hover:opacity-95 disabled:opacity-70"
+                  className="premium-btn-primary w-full mt-2 disabled:opacity-70"
                 >
                   {saving ? "Saving..." : editingId ? "Save changes" : "Create service"}
                 </button>

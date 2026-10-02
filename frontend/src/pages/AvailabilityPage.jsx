@@ -129,7 +129,7 @@ export default function AvailabilityPage() {
             return (
               <div
                 key={day.value}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]"
+                className="premium-card p-5"
               >
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-3">
@@ -145,7 +145,7 @@ export default function AvailabilityPage() {
                     type="button"
                     onClick={() => saveDay(day.value)}
                     disabled={savingDay === day.value}
-                    className="rounded-lg bg-indigo-50 px-3.5 py-1.5 text-xs font-extrabold text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-60"
+                    className="premium-btn-secondary px-3 py-1.5 text-xs disabled:opacity-60"
                   >
                     {savingDay === day.value ? "Saving..." : "Save"}
                   </button>
@@ -161,7 +161,7 @@ export default function AvailabilityPage() {
                           onChange={(e) =>
                             updateSlot(day.value, index, "startTime", e.target.value)
                           }
-                          className="h-10 rounded-lg border border-slate-300 px-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:outline-none"
+                          className="premium-input h-10 px-3 text-sm w-32"
                         />
                         <span className="text-sm text-slate-400">to</span>
                         <input
@@ -170,7 +170,7 @@ export default function AvailabilityPage() {
                           onChange={(e) =>
                             updateSlot(day.value, index, "endTime", e.target.value)
                           }
-                          className="h-10 rounded-lg border border-slate-300 px-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:outline-none"
+                          className="premium-input h-10 px-3 text-sm w-32"
                         />
                         <button
                           type="button"

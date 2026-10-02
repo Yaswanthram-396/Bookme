@@ -1,197 +1,32 @@
 import { useEffect, useRef, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import logo from "../../assets/logo.png";
 import { getme } from "../api/auth";
+import {
+  LayoutDashboard,
+  CalendarCheck,
+  Layers,
+  Clock,
+  CreditCard,
+  User,
+  Settings,
+  HelpCircle,
+  Menu,
+  ChevronDown,
+} from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", to: "/" },
-  { label: "Profile", to: "/profile" },
-  { label: "Services", to: "/services" },
-  { label: "Bookings", to: "/bookings" },
-  { label: "Availability", to: "/availability" },
-  { label: "Payments", to: "/payments" },
+  { label: "Overview", to: "/", icon: LayoutDashboard },
+  { label: "Bookings", to: "/bookings", icon: CalendarCheck },
+  { label: "Services", to: "/services", icon: Layers },
+  { label: "Availability", to: "/availability", icon: Clock },
+  { label: "Payments", to: "/payments", icon: CreditCard },
+  { label: "Profile", to: "/profile", icon: User },
 ];
-
-const styles = {
-  page: {
-    display: "flex",
-    minHeight: "100vh",
-    background: "linear-gradient(135deg, #f5f7ff 0%, #eef4ff 100%)",
-    color: "#14213d",
-    fontFamily: "Inter, Arial, sans-serif",
-  },
-  sidebar: {
-    width: "260px",
-    background: "rgba(14, 30, 75, 0.95)",
-    color: "#f8fbff",
-    padding: "28px 18px",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    boxShadow: "12px 0 30px rgba(15, 23, 42, 0.12)",
-    zIndex: 10,
-  },
-  brand: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    padding: "8px 10px 22px",
-    borderBottom: "1px solid rgba(255,255,255,0.12)",
-    marginBottom: "18px",
-  },
-  logo: {
-    width: "40px",
-    height: "40px",
-    borderRadius: "12px",
-    objectFit: "cover",
-    background: "#ffffff",
-    padding: "4px",
-  },
-  nav: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-  navLink: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "12px 14px",
-    borderRadius: "12px",
-    color: "rgba(255,255,255,0.8)",
-    textDecoration: "none",
-    fontWeight: 600,
-    transition: "all 0.2s ease",
-  },
-  navLinkActive: {
-    background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
-    color: "#ffffff",
-    boxShadow: "0 10px 24px rgba(99, 102, 241, 0.35)",
-  },
-  logoutButton: {
-    border: "none",
-    background: "rgba(255,255,255,0.08)",
-    color: "#ffffff",
-    borderRadius: "12px",
-    padding: "12px 14px",
-    fontWeight: 700,
-    cursor: "pointer",
-  },
-  main: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    minWidth: 0,
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "22px 28px 18px",
-    background: "rgba(255,255,255,0.7)",
-    backdropFilter: "blur(20px)",
-    borderBottom: "1px solid rgba(148, 163, 184, 0.22)",
-    position: "sticky",
-    top: 0,
-    zIndex: 9,
-  },
-  headerLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
-  mobileToggle: {
-    display: "none",
-    width: "42px",
-    height: "42px",
-    borderRadius: "12px",
-    border: "1px solid rgba(148, 163, 184, 0.35)",
-    background: "#ffffff",
-    color: "#1f2937",
-    fontSize: "24px",
-    cursor: "pointer",
-  },
-  headerTitle: {
-    fontSize: "24px",
-    fontWeight: 800,
-    margin: 0,
-  },
-  userMenu: {
-    position: "relative",
-  },
-  avatarButton: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    background: "#ffffff",
-    border: "1px solid rgba(148, 163, 184, 0.28)",
-    borderRadius: "14px",
-    padding: "8px 12px",
-    boxShadow: "0 8px 18px rgba(15, 23, 42, 0.06)",
-    cursor: "pointer",
-  },
-  avatar: {
-    width: "38px",
-    height: "38px",
-    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-    color: "#fff",
-    borderRadius: "50%",
-    display: "grid",
-    placeItems: "center",
-    fontWeight: 800,
-  },
-  userMeta: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    lineHeight: 1.2,
-  },
-  userName: {
-    fontWeight: 700,
-    color: "#0f172a",
-  },
-  userRole: {
-    fontSize: "12px",
-    color: "#64748b",
-  },
-  dropdown: {
-    position: "absolute",
-    right: 0,
-    top: "calc(100% + 10px)",
-    width: "220px",
-    background: "#ffffff",
-    border: "1px solid rgba(148, 163, 184, 0.25)",
-    borderRadius: "14px",
-    boxShadow: "0 24px 45px rgba(15, 23, 42, 0.12)",
-    padding: "10px",
-  },
-  dropdownItem: {
-    display: "block",
-    width: "100%",
-    border: "none",
-    background: "transparent",
-    textAlign: "left",
-    padding: "10px 12px",
-    borderRadius: "10px",
-    color: "#0f172a",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  content: {
-    flex: 1,
-    padding: "28px",
-  },
-  overlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(15, 23, 42, 0.35)",
-    display: "none",
-    zIndex: 8,
-  },
-};
 
 export default function AppLayout({ children }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const hasToken = Boolean(localStorage.getItem("token"));
   const [user, setUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -204,22 +39,15 @@ export default function AppLayout({ children }) {
         setDropdownOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
     if (hasToken) {
       getme()
-        .then((res) => {
-          setUser(res.data.data);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+        .then((res) => setUser(res.data.data))
+        .catch(console.error);
     }
   }, [hasToken]);
 
@@ -231,121 +59,131 @@ export default function AppLayout({ children }) {
   const displayName = user?.businessName || user?.name || "My Business";
   const avatarInitial = displayName.slice(0, 1).toUpperCase();
 
+  const getPageTitle = () => {
+    const match = navItems.find((item) => item.to === location.pathname);
+    return match ? match.label : "Dashboard";
+  };
+
   return (
-    <div style={styles.page}>
-      <div
-        style={{
-          ...styles.overlay,
-          display: mobileMenuOpen ? "block" : "none",
-        }}
-        onClick={() => setMobileMenuOpen(false)}
-      />
+    <div className="flex min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-sm lg:hidden transition-opacity"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
+      {/* Sidebar */}
       <aside
-        style={{
-          ...styles.sidebar,
-          position: mobileMenuOpen ? "fixed" : "relative",
-          left: mobileMenuOpen ? 0 : "auto",
-          top: 0,
-          bottom: 0,
-          width: mobileMenuOpen ? "260px" : "260px",
-          transform: mobileMenuOpen ? "translateX(0)" : "translateX(0)",
-        }}
+        className={`fixed inset-y-0 left-0 z-50 w-[260px] bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 h-screen flex flex-col ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <div>
-          <div style={styles.brand}>
-            <img src={logo} alt="BookMe logo" style={styles.logo} />
-            <div>
-              <div style={{ fontSize: "18px", fontWeight: 800 }}>BookMe</div>
-              <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)" }}>
-                Business Suite
-              </div>
-            </div>
+        <div className="p-6">
+          <div className="flex items-center gap-3">
+            <span className="text-xl font-bold tracking-tight text-indigo-600">
+              Bookme
+            </span>
           </div>
+        </div>
 
-          <nav style={styles.nav}>
-            {navItems.map((item) => (
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive =
+              location.pathname === item.to ||
+              (item.to !== "/" && location.pathname.startsWith(item.to));
+            return (
               <NavLink
                 key={item.to}
                 to={item.to}
                 onClick={() => setMobileMenuOpen(false)}
-                end={item.to === "/"}
-                style={({ isActive }) => ({
-                  ...styles.navLink,
-                  ...(isActive ? styles.navLinkActive : {}),
-                })}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-indigo-50 text-indigo-700"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
               >
-                <span>{item.label}</span>
+                <Icon
+                  className={`h-5 w-5 ${isActive ? "text-indigo-600" : "text-slate-400"}`}
+                />
+                {item.label}
               </NavLink>
-            ))}
-          </nav>
-        </div>
+            );
+          })}
+        </nav>
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          style={styles.logoutButton}
-        >
-          Logout
-        </button>
+        <div className="p-4 border-t border-slate-100">
+          <button className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <HelpCircle className="h-5 w-5 text-slate-400" />
+            Help & Support
+          </button>
+          <button className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <Settings className="h-5 w-5 text-slate-400" />
+            Settings
+          </button>
+        </div>
       </aside>
 
-      <div style={styles.main}>
-        <header style={styles.header}>
-          <div style={styles.headerLeft}>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Top Header */}
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/80 px-4 sm:px-6 lg:px-8 backdrop-blur-md">
+          <div className="flex items-center gap-4">
             <button
-              type="button"
-              style={styles.mobileToggle}
-              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-md"
             >
-              ☰
+              <Menu className="h-5 w-5" />
             </button>
-            <h1 style={styles.headerTitle}>Overview</h1>
+            <h1 className="text-lg font-semibold text-slate-900 hidden sm:block">
+              {getPageTitle()}
+            </h1>
           </div>
 
-          <div ref={dropdownRef} style={styles.userMenu}>
-            <button
-              type="button"
-              style={styles.avatarButton}
-              onClick={() => setDropdownOpen((prev) => !prev)}
-            >
-              <div style={styles.avatar}>{avatarInitial}</div>
-              <div style={styles.userMeta}>
-                <span style={styles.userName}>{displayName}</span>
-                <span style={styles.userRole}>Business owner</span>
-              </div>
-              <span style={{ fontSize: "18px", color: "#64748b" }}>▾</span>
-            </button>
+          <div className="flex items-center gap-4">
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-2.5 rounded-full pl-1 pr-3 py-1 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-semibold text-sm">
+                  {avatarInitial}
+                </div>
+                <div className="hidden md:flex flex-col items-start leading-none">
+                  <span className="text-sm font-medium text-slate-700">
+                    {displayName}
+                  </span>
+                </div>
+                <ChevronDown className="h-4 w-4 text-slate-400 hidden md:block" />
+              </button>
 
-            {dropdownOpen && (
-              <div style={styles.dropdown}>
-                <button
-                  type="button"
-                  style={styles.dropdownItem}
-                  onClick={() => navigate("/profile")}
-                >
-                  Edit profile
-                </button>
-                <button
-                  type="button"
-                  style={styles.dropdownItem}
-                  onClick={() => navigate("/settings")}
-                >
-                  Account settings
-                </button>
-                <button
-                  type="button"
-                  style={{ ...styles.dropdownItem, color: "#dc2626" }}
-                  onClick={handleLogout}
-                >
-                  Sign out
-                </button>
-              </div>
-            )}
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 origin-top-right transform transition-all">
+                  <button
+                    onClick={() => {
+                      navigate("/profile");
+                      setDropdownOpen(false);
+                    }}
+                    className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                  >
+                    Edit profile
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
-        <main style={styles.content}>{children}</main>
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-5xl">{children}</div>
+        </main>
       </div>
     </div>
   );

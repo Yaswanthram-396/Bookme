@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../components/AppLayout";
 import { getme } from "../api/auth";
 import { listBookings } from "../api/bookings";
-import { getPaymentOverview } from "../api/payment";
+import { getRevenue } from "../api/payment";
 import { listServices } from "../api/services";
 import {
   ArrowRight,
@@ -384,7 +384,7 @@ export default function DashboardPage() {
           getme(),
           listServices(),
           listBookings(),
-          getPaymentOverview(),
+          getRevenue(),
         ]);
       if (meResult.status === "fulfilled") setUser(meResult.value.data.data);
       if (servicesResult.status === "fulfilled")
@@ -392,7 +392,7 @@ export default function DashboardPage() {
       if (bookingsResult.status === "fulfilled")
         setBookings(bookingsResult.value.data.bookings || []);
       if (paymentsResult.status === "fulfilled")
-        setWallet(paymentsResult.value.data.wallet || null);
+        setWallet({ available: paymentsResult.value.data.summary?.netRevenue || 0 });
     };
     loadDashboard().catch(() => {});
   }, []);
@@ -426,14 +426,14 @@ export default function DashboardPage() {
         const d = getBookingDate(b, today);
         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
       })
-      .reduce((sum, b) => sum + (b.providerPayoutAmount || b.amount || 0), 0);
+      .reduce((sum, b) => sum + (b.providerAmount || b.amount || 0), 0);
 
     const prevEarnings = paidBookings
       .filter((b) => {
         const d = getBookingDate(b, today);
         return d.getMonth() === prevMonth && d.getFullYear() === prevYear;
       })
-      .reduce((sum, b) => sum + (b.providerPayoutAmount || b.amount || 0), 0);
+      .reduce((sum, b) => sum + (b.providerAmount || b.amount || 0), 0);
 
     if (prevEarnings === 0) return currentEarnings > 0 ? 100 : 0;
     return ((currentEarnings - prevEarnings) / prevEarnings) * 100;
@@ -526,7 +526,7 @@ export default function DashboardPage() {
     const getEarnings = (filteredBookings) => {
       return (
         filteredBookings.reduce(
-          (sum, b) => sum + (b.providerPayoutAmount || b.amount || 0),
+          (sum, b) => sum + (b.providerAmount || b.amount || 0),
           0,
         ) / 100
       );
@@ -815,7 +815,7 @@ export default function DashboardPage() {
               label: "Total Income",
               value: formatMoney(
                 paidBookings.reduce(
-                  (s, b) => s + (b.providerPayoutAmount || 0),
+                  (s, b) => s + (b.providerAmount || 0),
                   0,
                 ),
               ),

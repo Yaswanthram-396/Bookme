@@ -126,7 +126,7 @@ const AuthPage = () => {
     }
   };
   const inputClass =
-    "w-full h-12 rounded-xl border border-slate-300 bg-white px-3.5 text-[15px] text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100";
+    "premium-input w-full h-12 text-[15px]";
   const pillClass =
     "inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200";
 
@@ -183,8 +183,8 @@ const AuthPage = () => {
                   type="button"
                   className={`${pillClass} ${
                     mode === "login"
-                      ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-[0_8px_20px_rgba(99,102,241,0.26)]"
-                      : "text-slate-600"
+                      ? "premium-btn-primary"
+                      : "text-slate-600 hover:text-slate-900 font-medium"
                   }`}
                   onClick={() => setMode("login")}
                 >
@@ -194,8 +194,8 @@ const AuthPage = () => {
                   type="button"
                   className={`${pillClass} ${
                     mode === "register"
-                      ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-[0_8px_20px_rgba(99,102,241,0.26)]"
-                      : "text-slate-600"
+                      ? "premium-btn-primary"
+                      : "text-slate-600 hover:text-slate-900 font-medium"
                   }`}
                   onClick={() => setMode("register")}
                 >
@@ -258,7 +258,7 @@ const AuthPage = () => {
                   </label>
                   <div className="flex gap-2.5">
                     <input
-                      className="h-12 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 text-[15px] text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                      className="premium-input h-12 flex-1 text-[15px]"
                       type="text"
                       name="otp"
                       value={form.otp || ""}
@@ -268,7 +268,7 @@ const AuthPage = () => {
                     />
                     <button
                       type="button"
-                      className="min-w-[120px] rounded-xl bg-indigo-100 px-4 py-3 text-sm font-extrabold text-indigo-800 transition hover:bg-indigo-200 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="premium-btn-secondary min-w-[120px] h-12 text-sm disabled:cursor-not-allowed disabled:opacity-60"
                       onClick={sendOtp}
                       disabled={otpLoading || otpCooldown > 0}
                     >
@@ -354,7 +354,7 @@ const AuthPage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="h-[54px] w-full rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-base font-extrabold text-white shadow-[0_16px_32px_rgba(99,102,241,0.25)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-80"
+                className="premium-btn-primary h-[54px] w-full text-base disabled:cursor-not-allowed disabled:opacity-80"
               >
                 {loading
                   ? "Please wait..."

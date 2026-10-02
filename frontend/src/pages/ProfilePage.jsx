@@ -20,7 +20,7 @@ const TIMEZONES = [
 ];
 
 const inputClass =
-  "w-full h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-[14px] text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100";
+  "premium-input w-full";
 
 export default function ProfilePage() {
   const { showToast } = useToast() || {};
@@ -138,7 +138,7 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+        <div className="premium-card p-6">
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="text-[13px] font-bold text-slate-700">Your name</label>
@@ -164,7 +164,7 @@ export default function ProfilePage() {
             <div>
               <label className="text-[13px] font-bold text-slate-700">Business description</label>
               <textarea
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-[14px] text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="premium-input w-full py-3 h-auto"
                 rows={3}
                 value={form.businessDescription}
                 onChange={(e) =>
@@ -200,14 +200,14 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={saving}
-              className="h-11 w-full rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(99,102,241,0.25)] transition hover:opacity-95 disabled:opacity-70"
+              className="premium-btn-primary w-full mt-2 disabled:opacity-70"
             >
               {saving ? "Saving..." : "Save changes"}
             </button>
           </form>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+        <div className="premium-card p-6">
           <h2 className="mb-4 text-lg font-bold text-slate-800">Google Calendar</h2>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -230,7 +230,7 @@ export default function ProfilePage() {
                 type="button"
                 onClick={disconnectCalendar}
                 disabled={calendarLoading}
-                className="flex items-center gap-1.5 rounded-lg bg-red-50 px-3.5 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100 disabled:opacity-60"
+                className="premium-btn-secondary text-red-600 px-3 py-2 text-xs disabled:opacity-60 flex items-center gap-1.5"
               >
                 <Link2Off className="h-3.5 w-3.5" /> Disconnect
               </button>
@@ -239,7 +239,7 @@ export default function ProfilePage() {
                 type="button"
                 onClick={connectCalendar}
                 disabled={calendarLoading}
-                className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-extrabold text-white transition hover:opacity-90 disabled:opacity-60"
+                className="premium-btn-primary px-4 py-2 text-xs disabled:opacity-60"
               >
                 {calendarLoading ? "Redirecting..." : "Connect"}
               </button>
