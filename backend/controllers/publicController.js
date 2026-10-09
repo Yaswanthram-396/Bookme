@@ -10,6 +10,7 @@ import { requestEmailOtp, verifyEmailOtp } from "../utils/emailOtp.js";
 import { generateSlots } from "../utils/slotGenerator.js";
 
 import { timeOverlap } from "../utils/overlap.js";
+import { recordMockPayment } from "./paymentController.js";
 
 const getBusinessBySlug = async (slug) => {
   return User.findOne({ slug }).select("-password");
@@ -31,7 +32,7 @@ const findActiveSlotBookings = ({ userId, date }) => {
   return Booking.find({
     userId,
     date,
-    status: "confirmed",
+    active: true,
   });
 };
 
@@ -151,6 +152,7 @@ export const createPublicBooking = async (req, res) => {
       endTime,
       notes,
       emailOtp,
+      paymentMode,
     } = req.body;
 
     if (
@@ -183,6 +185,16 @@ export const createPublicBooking = async (req, res) => {
       return res.status(404).json({ message: "Service not found" });
     }
 
+    const availableSlots = await generateSlots(business._id, service, date);
+    const isValidSlot = availableSlots.some(
+      (slot) => slot.startTime === startTime && slot.endTime === endTime,
+    );
+    if (!isValidSlot) {
+      return res
+        .status(409)
+        .json({ message: "That slot is no longer available" });
+    }
+
     const bookings = await findActiveSlotBookings({
       userId: business._id,
       date,
@@ -196,6 +208,12 @@ export const createPublicBooking = async (req, res) => {
       return res
         .status(409)
         .json({ message: "That slot is no longer available" });
+    }
+
+    const requiresPayment = service.price > 0;
+
+    if (requiresPayment && !paymentMode) {
+      return res.status(400).json({ message: "Payment method is required" });
     }
 
     const otpResult = await verifyEmailOtp({
@@ -236,10 +254,11 @@ export const createPublicBooking = async (req, res) => {
         startTime,
         endTime,
         notes: notes || "",
-        amount: 0,
+        amount: requiresPayment ? Math.round(service.price * 100) : 0,
         payoutStatus: "not_required",
-        paymentStatus: "not_required",
         status: "confirmed",
+        paymentStatus: requiresPayment ? "paid" : "not_required",
+        active: true,
         customerCalendarUrl,
       });
     } catch (createError) {
@@ -249,6 +268,10 @@ export const createPublicBooking = async (req, res) => {
           .json({ message: "That slot is no longer available" });
       }
       throw createError;
+    }
+
+    if (requiresPayment) {
+      await recordMockPayment({ business, booking, paymentMode });
     }
 
     try {

@@ -188,6 +188,7 @@ export const updateProfile = async (req, res) => {
       timezone,
       brandTheme,
       brandAccent,
+      payoutDetails,
     } = req.body;
 
     const user = await Users.findById(req.user.id);
@@ -210,6 +211,27 @@ export const updateProfile = async (req, res) => {
     }
     if (brandAccent !== undefined) {
       user.brandAccent = brandAccent;
+    }
+    if (payoutDetails !== undefined) {
+      const allowedFields = [
+        "accountHolderName",
+        "accountNumber",
+        "ifscCode",
+        "bankName",
+        "bankBranch",
+        "bankAddress",
+        "upiId",
+      ];
+      allowedFields.forEach((field) => {
+        if (payoutDetails[field] !== undefined) {
+          user.payoutDetails[field] = payoutDetails[field];
+        }
+      });
+      user.payoutDetails.isComplete = Boolean(
+        user.payoutDetails.upiId ||
+          (user.payoutDetails.accountNumber && user.payoutDetails.ifscCode),
+      );
+      user.payoutDetails.updatedAt = new Date();
     }
 
     if (businessName !== undefined && businessName !== user.businessName) {

@@ -7,6 +7,7 @@ import {
   cancelBookingCalendarEvent,
 } from "../utils/googleCalender.js";
 import { sendBookingNotification } from "../utils/bookingNotification.js";
+import { refundMockPayment } from "./paymentController.js";
 
 export const listBookings = async (req, res) => {
   try {
@@ -56,7 +57,15 @@ export const cancelBooking = async (req, res) => {
     }
 
     booking.status = "cancelled";
+    booking.active = false;
+    booking.pendingExpiresAt = null;
     await booking.save();
+
+    try {
+      await refundMockPayment(booking);
+    } catch (refundError) {
+      console.error("Refund failed:", refundError.message);
+    }
 
     const business = await User.findById(req.user.id);
     const service = await Service.findById(booking.serviceId);
@@ -107,7 +116,7 @@ export const rescheduleBooking = async (req, res) => {
     const conflicting = await Booking.find({
       userId: req.user.id,
       date,
-      status: "confirmed",
+      active: true,
       _id: { $ne: booking._id },
     });
     const hasConflict = conflicting.some((existing) =>

@@ -48,10 +48,25 @@ const bookingSchema = new mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ["not_required"],
+      enum: [
+        "not_required",
+        "pending",
+        "paid",
+        "failed",
+        "refunded",
+        "partially_refunded",
+      ],
       default: "not_required",
     },
     amount: {
+      type: Number,
+      default: 0,
+    },
+    platformFee: {
+      type: Number,
+      default: 0,
+    },
+    providerAmount: {
       type: Number,
       default: 0,
     },
@@ -63,6 +78,10 @@ const bookingSchema = new mongoose.Schema(
     currency: {
       type: String,
       default: "inr",
+    },
+    active: {
+      type: Boolean,
+      default: true,
     },
     googleEventId: {
       type: String,
@@ -95,7 +114,7 @@ const bookingSchema = new mongoose.Schema(
 
 bookingSchema.index(
   { userId: 1, date: 1, startTime: 1 },
-  { unique: true, partialFilterExpression: { status: "confirmed" } },
+  { unique: true, partialFilterExpression: { active: true } },
 );
 
 const Booking = mongoose.model("Booking", bookingSchema);

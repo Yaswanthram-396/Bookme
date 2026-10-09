@@ -14,7 +14,7 @@ export const generateSlots = async (userId, service, date) => {
     const bookings = await Booking.find({
       userId,
       date,
-      status: "confirmed",
+      active: true,
     });
 
     const duration = service.duration;

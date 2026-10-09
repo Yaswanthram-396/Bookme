@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Booking from "../models/Booking.js";
 import User from "../models/User.js";
+import { getPlatformSettings } from "../models/PlatformSettings.js";
 
 const createAdminToken = (email) => {
   return jwt.sign({ email, role: "admin" }, process.env.ADMIN_JWT_SECRET, {
@@ -103,5 +104,43 @@ export const getAdminDashboard = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getSettings = async (req, res) => {
+  try {
+    const settings = await getPlatformSettings();
+    res.status(200).json({
+      success: true,
+      platformFeePercent: settings.platformFeePercent,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateSettings = async (req, res) => {
+  try {
+    const { platformFeePercent } = req.body;
+    if (
+      platformFeePercent === undefined ||
+      Number.isNaN(Number(platformFeePercent)) ||
+      Number(platformFeePercent) < 0 ||
+      Number(platformFeePercent) > 100
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "platformFeePercent must be a number between 0 and 100",
+      });
+    }
+    const settings = await getPlatformSettings();
+    settings.platformFeePercent = Number(platformFeePercent);
+    await settings.save();
+    res.status(200).json({
+      success: true,
+      platformFeePercent: settings.platformFeePercent,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

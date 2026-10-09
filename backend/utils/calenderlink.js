@@ -10,6 +10,7 @@ export const buildCustomerCalenderUrl = ({ business, service, booking }) => {
     details:
       booking.notes ||
       `Booking with ${business.businessName} for ${service.name}`,
+    ctz: business.timezone || "Asia/Kolkata",
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 };

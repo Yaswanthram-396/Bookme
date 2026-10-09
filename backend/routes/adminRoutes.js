@@ -3,6 +3,8 @@ import {
   getAdminSummary,
   loginAdmin,
   getAdminDashboard,
+  getSettings,
+  updateSettings,
 } from "../controllers/adminController.js";
 import adminAuth from "../middleware/adminAuth.js";
 
@@ -17,5 +19,7 @@ router.get("/summary", adminAuth, async (req, res) => {
   }
 });
 router.get("/dashboard", adminAuth, getAdminDashboard);
+router.get("/settings", adminAuth, getSettings);
+router.patch("/settings", adminAuth, updateSettings);
 
 export default router;

@@ -6,6 +6,7 @@ import integrationRoutes from "./integrationroutes.js";
 import publicRoutes from "./publicroutes.js";
 import adminRoutes from "./adminRoutes.js";
 import bookingRoutes from "./bookingroutes.js";
+import paymentRoutes from "./paymentroutes.js";
 
 const router = express.Router();
 
@@ -23,5 +24,6 @@ router.use("/public", publicRoutes);
 
 router.use("/admin", adminRoutes);
 router.use("/bookings", bookingRoutes);
+router.use("/payments", paymentRoutes);
 
 export default router;

@@ -10,7 +10,7 @@ const app = express();
 app.use(morgan("dev"));
 app.use(helmet());
 
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
+const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5175")
   .split(",")
   .map((origin) => origin.trim());
 
