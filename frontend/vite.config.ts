@@ -10,4 +10,10 @@ export default defineConfig({
     tailwindcss(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  server: {
+    allowedHosts: ['bookme-1-gq20.onrender.com'],
+  },
+  preview: {
+    allowedHosts: ['bookme-1-gq20.onrender.com'],
+  },
 })
