@@ -14,9 +14,17 @@ const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5175")
   .split(",")
   .map((origin) => origin.trim());
 
+// app.use(
+//   cors({
+//     origin: allowedOrigins,
+//     credentials: true,
+//   }),
+// );
+// const cors = require('cors');
+
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: true, // Reflects the incoming origin
     credentials: true,
   }),
 );
