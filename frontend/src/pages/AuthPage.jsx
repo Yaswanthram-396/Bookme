@@ -125,8 +125,7 @@ const AuthPage = () => {
       setLoading(false);
     }
   };
-  const inputClass =
-    "premium-input w-full h-12 text-[15px]";
+  const inputClass = "premium-input w-full h-12 text-[15px]";
   const pillClass =
     "inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200";
 
@@ -138,11 +137,9 @@ const AuthPage = () => {
         <aside className="flex flex-col justify-between bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 p-8 text-slate-50 sm:p-10 lg:p-11">
           <div>
             <div className="mb-8 flex items-center gap-3.5">
-              <img
-                src={logo}
-                alt="BookMe logo"
-                className="h-12 w-12 rounded-[14px] bg-white p-1.5 object-cover"
-              />
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 p-[2px] flex items-center justify-center">
+                <p className="text-lg font-bold text-white">B</p>
+              </div>
               <span className="text-[22px] font-extrabold tracking-[-0.03em]">
                 BookMe
               </span>
