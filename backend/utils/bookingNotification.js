@@ -314,6 +314,7 @@ const buildBookingMessage = ({
     { label: "Customer", value: booking.customerName },
     { label: "Customer email", value: booking.customerEmail },
     { label: "When", value: appointmentTime },
+    ...(booking.location ? [{ label: "Location", value: booking.location }] : []),
     { label: "Status", value: bookingStatus },
     { label: "Payment", value: paymentStatus },
     { label: "Amount", value: amount },

@@ -2,6 +2,8 @@ const toGoogleDateTime = (date, time) => {
   return `${date.replaceAll("-", "")}T${time.replace(":", "")}00`;
 };
 
+import { formatLocation } from "./serviceSchedule.js";
+
 export const buildCustomerCalenderUrl = ({ business, service, booking }) => {
   const params = new URLSearchParams({
     action: "TEMPLATE",
@@ -12,5 +14,7 @@ export const buildCustomerCalenderUrl = ({ business, service, booking }) => {
       `Booking with ${business.businessName} for ${service.name}`,
     ctz: business.timezone || "Asia/Kolkata",
   });
+  const location = booking.location || formatLocation(service);
+  if (location) params.set("location", location);
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 };

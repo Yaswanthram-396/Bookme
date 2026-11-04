@@ -1,4 +1,5 @@
 import Service from "../models/service.js";
+import { parseServiceSettings } from "../utils/serviceSchedule.js";
 
 export const listService = async (req, res) => {
   try {
@@ -28,7 +29,12 @@ export const createService = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Name and duration are required" });
     }
+    const settings = parseServiceSettings(req.body);
+    if (settings.error) {
+      return res.status(400).json({ success: false, message: settings.error });
+    }
     const service = await Service.create({
+      ...settings.updates,
       name,
       duration,
       price,
@@ -63,6 +69,12 @@ export const updateService = async (req, res) => {
         updates[field] = req.body[field];
       }
     });
+
+    const settings = parseServiceSettings(req.body);
+    if (settings.error) {
+      return res.status(400).json({ message: settings.error });
+    }
+    Object.assign(updates, settings.updates);
 
     const service = await Service.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id, isDeleted: { $ne: true } },

@@ -7,7 +7,26 @@ import {
   deleteServices,
 } from "../api/services";
 import { useToast } from "../context/Toastcontext";
-import { Plus, Pencil, Trash2, Clock, IndianRupee, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Clock, IndianRupee, X, MapPin } from "lucide-react";
+import WeeklyHoursEditor from "../components/WeeklyHoursEditor";
+import {
+  daysToSchedule,
+  defaultOpenSchedule,
+  hasInvalidSlot,
+  scheduleToDays,
+} from "../components/schedule";
+
+const LOCATION_TYPES = [
+  { value: "in_person", label: "In person", placeholder: "Street address" },
+  { value: "online", label: "Online", placeholder: "Meeting link (e.g. Zoom / Meet)" },
+  { value: "phone", label: "Phone", placeholder: "Optional note, e.g. we will call you" },
+];
+
+const locationLabel = (service) => {
+  const type = LOCATION_TYPES.find((t) => t.value === service.locationType);
+  if (!type) return "";
+  return service.locationDetails ? `${type.label}: ${service.locationDetails}` : type.label;
+};
 
 const emptyForm = {
   name: "",
@@ -16,6 +35,13 @@ const emptyForm = {
   price: 0,
   bufferBefore: 0,
   bufferAfter: 0,
+  locationType: "in_person",
+  locationDetails: "",
+  bookableFrom: "",
+  bookableUntil: "",
+  advanceDays: 14,
+  customHours: false,
+  schedule: defaultOpenSchedule(),
 };
 
 const inputClass =
@@ -61,6 +87,15 @@ export default function ServicesPage() {
       price: service.price,
       bufferBefore: service.bufferBefore || 0,
       bufferAfter: service.bufferAfter || 0,
+      locationType: service.locationType || "in_person",
+      locationDetails: service.locationDetails || "",
+      bookableFrom: service.bookableFrom || "",
+      bookableUntil: service.bookableUntil || "",
+      advanceDays: service.advanceDays || 14,
+      customHours: (service.availability || []).length > 0,
+      schedule: (service.availability || []).length
+        ? daysToSchedule(service.availability)
+        : defaultOpenSchedule(),
     });
     setShowForm(true);
   };
@@ -77,10 +112,18 @@ export default function ServicesPage() {
       showToast?.("Name and duration are required", "error");
       return;
     }
+    if (form.customHours && hasInvalidSlot(form.schedule)) {
+      showToast?.("Start time must be before end time", "error");
+      return;
+    }
     setSaving(true);
     try {
+      const { customHours, schedule, ...rest } = form;
       const payload = {
-        ...form,
+        ...rest,
+        // [] means "use my default availability".
+        availability: customHours ? scheduleToDays(schedule) : [],
+        advanceDays: Number(form.advanceDays) || 14,
         duration: Number(form.duration),
         price: Number(form.price) || 0,
         bufferBefore: Number(form.bufferBefore) || 0,
@@ -181,6 +224,9 @@ export default function ServicesPage() {
                     <span className="flex items-center gap-0.5">
                       <IndianRupee className="h-3.5 w-3.5" /> {service.price || 0}
                     </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3.5 w-3.5" /> {locationLabel(service)}
+                    </span>
                   </div>
                 </div>
 
@@ -220,7 +266,7 @@ export default function ServicesPage() {
 
         {showForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
               <div className="mb-5 flex items-center justify-between">
                 <h2 className="text-lg font-extrabold text-slate-900">
                   {editingId ? "Edit service" : "New service"}
@@ -291,6 +337,99 @@ export default function ServicesPage() {
                       onChange={(e) => setForm((f) => ({ ...f, bufferAfter: e.target.value }))}
                     />
                   </div>
+                </div>
+                <div>
+                  <label className="text-[13px] font-bold text-slate-700">Location</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {LOCATION_TYPES.map((type) => (
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, locationType: type.value }))}
+                        className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${
+                          form.locationType === type.value
+                            ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                            : "border-slate-200 text-slate-500 hover:border-indigo-300"
+                        }`}
+                      >
+                        {type.label}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    className={`${inputClass} mt-2`}
+                    value={form.locationDetails}
+                    onChange={(e) => setForm((f) => ({ ...f, locationDetails: e.target.value }))}
+                    placeholder={
+                      LOCATION_TYPES.find((t) => t.value === form.locationType)?.placeholder
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="text-[13px] font-bold text-slate-700">Booking window</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <span className="text-[11px] font-semibold text-slate-400">From</span>
+                      <input
+                        className={inputClass}
+                        type="date"
+                        value={form.bookableFrom}
+                        onChange={(e) => setForm((f) => ({ ...f, bookableFrom: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-semibold text-slate-400">Until</span>
+                      <input
+                        className={inputClass}
+                        type="date"
+                        min={form.bookableFrom || undefined}
+                        value={form.bookableUntil}
+                        onChange={(e) => setForm((f) => ({ ...f, bookableUntil: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-semibold text-slate-400">Days ahead</span>
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min={1}
+                        max={365}
+                        value={form.advanceDays}
+                        onChange={(e) => setForm((f) => ({ ...f, advanceDays: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    Leave dates empty for no limit. Customers can book up to the given number of
+                    days ahead.
+                  </p>
+                </div>
+                <div>
+                  <label className="flex items-center gap-2.5">
+                    <input
+                      type="checkbox"
+                      checked={form.customHours}
+                      onChange={(e) => setForm((f) => ({ ...f, customHours: e.target.checked }))}
+                      className="h-4.5 w-4.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-[13px] font-bold text-slate-700">
+                      Custom weekly hours for this service
+                    </span>
+                  </label>
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    {form.customHours
+                      ? "Only these days and times are bookable for this service."
+                      : "Uses your default availability."}
+                  </p>
+                  {form.customHours && (
+                    <div className="mt-3">
+                      <WeeklyHoursEditor
+                        compact
+                        value={form.schedule}
+                        onChange={(schedule) => setForm((f) => ({ ...f, schedule }))}
+                      />
+                    </div>
+                  )}
                 </div>
                 <button
                   type="submit"

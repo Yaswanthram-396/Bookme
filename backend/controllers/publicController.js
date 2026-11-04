@@ -8,6 +8,7 @@ import { sendBookingNotification } from "../utils/bookingNotification.js";
 
 import { requestEmailOtp, verifyEmailOtp } from "../utils/emailOtp.js";
 import { generateSlots } from "../utils/slotGenerator.js";
+import { formatLocation } from "../utils/serviceSchedule.js";
 
 import { timeOverlap } from "../utils/overlap.js";
 
@@ -254,6 +255,7 @@ export const createPublicBooking = async (req, res) => {
         startTime,
         endTime,
         notes: notes || "",
+        location: formatLocation(service),
         amount: 0,
         payoutStatus: "not_required",
         status: "confirmed",

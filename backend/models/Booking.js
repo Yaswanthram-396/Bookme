@@ -96,6 +96,11 @@ const bookingSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    location: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     reminderSent: {
       type: Boolean,
       default: false,

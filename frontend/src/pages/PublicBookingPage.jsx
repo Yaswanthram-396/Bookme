@@ -34,7 +34,14 @@ const formatMoney = (amount = 0, currency = "inr") =>
     currency: currency.toUpperCase(),
   }).format(amount);
 
-const buildNextDays = (count = 14) => {
+const locationLabel = (service) => {
+  const labels = { in_person: "In person", online: "Online", phone: "Phone" };
+  const label = labels[service?.locationType];
+  if (!label) return "";
+  return service.locationDetails ? `${label}: ${service.locationDetails}` : label;
+};
+
+const buildNextDays = (count = 14, from = "", until = "") => {
   const days = [];
   const today = new Date();
   for (let i = 0; i < count; i += 1) {
@@ -43,6 +50,7 @@ const buildNextDays = (count = 14) => {
     const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
       d.getDate(),
     ).padStart(2, "0")}`;
+    if ((from && iso < from) || (until && iso > until)) continue;
     days.push({
       iso,
       label: d.toLocaleDateString("en-US", { weekday: "short" }),
@@ -58,7 +66,16 @@ const inputClass =
 
 export default function PublicBookingPage() {
   const { slug } = useParams();
-  const days = useMemo(() => buildNextDays(), []);
+  const [selectedService, setSelectedService] = useState(null);
+  const days = useMemo(
+    () =>
+      buildNextDays(
+        selectedService?.advanceDays || 14,
+        selectedService?.bookableFrom,
+        selectedService?.bookableUntil,
+      ),
+    [selectedService],
+  );
 
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -66,8 +83,7 @@ export default function PublicBookingPage() {
   const [services, setServices] = useState([]);
 
   const [step, setStep] = useState(STEPS.SERVICE);
-  const [selectedService, setSelectedService] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(days[0]?.iso || "");
+  const [selectedDate, setSelectedDate] = useState("");
   const [slots, setSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -125,7 +141,15 @@ export default function PublicBookingPage() {
   }, [step, selectedService, selectedDate, slug]);
 
   const chooseService = (service) => {
+    const firstDay = buildNextDays(
+      service.advanceDays || 14,
+      service.bookableFrom,
+      service.bookableUntil,
+    )[0];
     setSelectedService(service);
+    setSelectedDate(firstDay?.iso || "");
+    setSelectedSlot(null);
+    setSlots([]);
     setStep(STEPS.SLOT);
   };
 
@@ -315,6 +339,11 @@ export default function PublicBookingPage() {
                         <p className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-slate-400">
                           <Clock className="h-3.5 w-3.5" /> {service.duration} min
                         </p>
+                        {locationLabel(service) && (
+                          <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-slate-400">
+                            <MapPin className="h-3.5 w-3.5 shrink-0" /> {locationLabel(service)}
+                          </p>
+                        )}
                       </div>
                       <span className="flex items-center gap-0.5 text-base font-extrabold text-indigo-700">
                         <IndianRupee className="h-4 w-4" />
@@ -339,7 +368,17 @@ export default function PublicBookingPage() {
               <h2 className="mb-1 text-lg font-bold text-slate-800">
                 {selectedService.name}
               </h2>
+              {locationLabel(selectedService) && (
+                <p className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-400">
+                  <MapPin className="h-3.5 w-3.5 shrink-0" /> {locationLabel(selectedService)}
+                </p>
+              )}
               <p className="mb-5 text-sm text-slate-500">Pick a date and time</p>
+              {days.length === 0 && (
+                <p className="py-6 text-center text-sm text-slate-500">
+                  This service has no bookable dates right now.
+                </p>
+              )}
 
               <div className="mb-5 flex gap-2 overflow-x-auto pb-2">
                 {days.map((d) => (
@@ -600,6 +639,11 @@ export default function PublicBookingPage() {
                   {confirmedBooking.date} &middot; {confirmedBooking.startTime}-
                   {confirmedBooking.endTime}
                 </p>
+                {confirmedBooking.location && (
+                  <p className="mt-1 flex items-center gap-1 text-slate-500">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" /> {confirmedBooking.location}
+                  </p>
+                )}
                 {selectedService?.price ? (
                   <p className="mt-1 text-slate-500">
                     {formatMoney(selectedService.price, confirmedBooking.currency)}

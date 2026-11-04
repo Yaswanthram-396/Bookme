@@ -10,6 +10,7 @@ import { sendBookingNotification } from "../utils/bookingNotification.js";
 import { verifyEmailOtp } from "../utils/emailOtp.js";
 import { generateSlots } from "../utils/slotGenerator.js";
 import { timeOverlap } from "../utils/overlap.js";
+import { formatLocation } from "../utils/serviceSchedule.js";
 
 // Stripe requires Checkout Sessions to expire between 30 minutes and 24 hours.
 const SESSION_TTL_SECONDS = 30 * 60;
@@ -145,6 +146,7 @@ export const createCheckoutSession = async (req, res) => {
         startTime,
         endTime,
         notes: typeof notes === "string" ? notes : "",
+        location: formatLocation(service),
         amount,
         currency,
         platformFee,
@@ -283,6 +285,7 @@ export const getPaymentStatus = async (req, res) => {
         date: booking.date,
         startTime: booking.startTime,
         endTime: booking.endTime,
+        location: booking.location,
         customerEmail: booking.customerEmail,
         customerCalendarUrl: booking.customerCalendarUrl,
       },

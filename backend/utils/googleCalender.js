@@ -55,6 +55,7 @@ export const createBookingCalendarEvent = async ({
 
   const event = {
     summary,
+    ...(booking.location ? { location: booking.location } : {}),
     description,
     start: {
       dateTime: `${booking.date}T${booking.startTime}:00`,
@@ -120,6 +121,7 @@ export const updateBookingCalendarEvent = async ({
 
   const event = {
     summary,
+    ...(booking.location ? { location: booking.location } : {}),
     description,
     start: {
       dateTime: `${booking.date}T${booking.startTime}:00`,

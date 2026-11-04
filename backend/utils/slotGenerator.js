@@ -2,14 +2,22 @@ import Availability from "../models/Availability.js";
 import { timeOverlap } from "./overlap.js";
 import Booking from "../models/Booking.js";
 import { getDayOfWeek, timeToMinutes, minutesToTime } from "./time.js";
+import {
+  isDateBookable,
+  resolveWindows,
+  toLocalISODate,
+} from "./serviceSchedule.js";
 
 export const generateSlots = async (userId, service, date) => {
   const dayOfWeek = getDayOfWeek(date);
   try {
-    const availability = await Availability.findOne({ userId, dayOfWeek });
-    if (!availability || !availability.slot.length) {
-      return [];
-    }
+    if (!isDateBookable(service, date)) return [];
+
+    const availability = service.availability?.length
+      ? null
+      : await Availability.findOne({ userId, dayOfWeek });
+    const windows = resolveWindows(service, availability, dayOfWeek);
+    if (!windows.length) return [];
 
     const bookings = await Booking.find({
       userId,
@@ -23,11 +31,11 @@ export const generateSlots = async (userId, service, date) => {
     const step = duration + bufferBefore + bufferAfter;
 
     const now = new Date();
-    const isToday = date === now.toISOString().slice(0, 10);
+    const isToday = date === toLocalISODate(now);
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
     const slots = [];
-    for (const window of availability.slot) {
+    for (const window of windows) {
       const windowStart = timeToMinutes(window.startTime);
       const windowEnd = timeToMinutes(window.endTime);
 

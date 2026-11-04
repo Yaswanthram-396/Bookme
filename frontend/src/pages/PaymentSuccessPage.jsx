@@ -103,6 +103,9 @@ export default function PaymentSuccessPage() {
               <p className="mt-1 text-slate-500">
                 {booking?.date} &middot; {booking?.startTime}-{booking?.endTime}
               </p>
+              {booking?.location && (
+                <p className="mt-1 text-slate-500">{booking.location}</p>
+              )}
               <p className="mt-1 text-slate-500">
                 Paid {formatMoney(result.payment.amount, result.payment.currency)}
               </p>
