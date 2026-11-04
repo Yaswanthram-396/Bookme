@@ -10,21 +10,15 @@ const app = express();
 app.use(morgan("dev"));
 app.use(helmet());
 
+const cors = require("cors");
+
 const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5175")
   .split(",")
   .map((origin) => origin.trim());
 
-// app.use(
-//   cors({
-//     origin: allowedOrigins,
-//     credentials: true,
-//   }),
-// );
-// const cors = require('cors');
-
 app.use(
   cors({
-    origin: true, // Reflects the incoming origin
+    origin: allowedOrigins,
     credentials: true,
   }),
 );
