@@ -11,9 +11,6 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] })
   ],
   server: {
-    allowedHosts: ['bookme-1-gq20.onrender.com'],
-  },
-  preview: {
-    allowedHosts: ['bookme-1-gq20.onrender.com'],
-  },
+    host: '0.0.0.0',
+  }
 })
