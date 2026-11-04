@@ -1,8 +1,9 @@
-import { useState, type JSX } from 'react'
+import type { JSX } from 'react'
 import {Navigate,BrowserRouter,Route,Routes, useLocation} from 'react-router-dom'
 import './App.css'
 import AuthPage from './pages/AuthPage';
 import AdminLoginPage from './admin/adminLoginPage';
+import AdminDashboard from './admin/adminDashboard';
 import DashboardPage from './pages/dashboard';
 import PublicBookingPage from './pages/PublicBookingPage';
 import ServicesPage from './pages/ServicesPage';
@@ -57,7 +58,7 @@ function App() {
       <Route path="/profile" element={<ProtectedRoute><ProfilePage/></ProtectedRoute>}/>
       <Route path="/payments" element={<ProtectedRoute><PaymentsPage/></ProtectedRoute>}/>
       <Route path="/admin/login" element={<AdminLoginPage/>}/>
-      {/* TODO: /admin/dashboard route once AdminDashboard component is built out (currently a stub) */}
+      <Route path="/admin/dashboard" element={<AdminProctedRoute><AdminDashboard/></AdminProctedRoute>}/>
     </Routes>
     </BrowserRouter>
   )
