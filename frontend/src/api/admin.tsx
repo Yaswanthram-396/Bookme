@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const adminClient = axios.create({
-  baseURL: import.meta.env.REACT_APP_API_URL || "https://bookme-oozi.onrender.com/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://bookme-oozi.onrender.com/api",
 });
 
 adminClient.interceptors.request.use((res) => {
