@@ -43,10 +43,29 @@ const paymentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "paid", "failed", "refunded", "partially_refunded"],
+      enum: [
+        "pending",
+        "paid",
+        "failed",
+        "expired",
+        "refunded",
+        "partially_refunded",
+      ],
       default: "pending",
       index: true,
     },
+    stripeSessionId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    stripePaymentIntentId: {
+      type: String,
+      index: true,
+    },
+    paidAt: Date,
+    failureReason: String,
+    lastStripeEventId: String,
     refundAmount: {
       type: Number,
       default: 0,

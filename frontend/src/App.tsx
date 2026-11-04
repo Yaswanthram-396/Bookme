@@ -11,6 +11,8 @@ import AvailabilityPage from './pages/AvailabilityPage';
 import BookingsPage from './pages/BookingsPage';
 import ProfilePage from './pages/ProfilePage';
 import PaymentsPage from './pages/PaymentsPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import PaymentCancelPage from './pages/PaymentCancelPage';
 
 
 const ProtectedRoute=({children}:{children:JSX.Element})=>{
@@ -57,6 +59,8 @@ function App() {
       <Route path="/bookings" element={<ProtectedRoute><BookingsPage/></ProtectedRoute>}/>
       <Route path="/profile" element={<ProtectedRoute><ProfilePage/></ProtectedRoute>}/>
       <Route path="/payments" element={<ProtectedRoute><PaymentsPage/></ProtectedRoute>}/>
+      <Route path="/payment/success" element={<PaymentSuccessPage/>}/>
+      <Route path="/payment/cancel" element={<PaymentCancelPage/>}/>
       <Route path="/admin/login" element={<AdminLoginPage/>}/>
       <Route path="/admin/dashboard" element={<AdminProctedRoute><AdminDashboard/></AdminProctedRoute>}/>
     </Routes>

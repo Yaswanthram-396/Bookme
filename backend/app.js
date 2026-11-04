@@ -4,6 +4,7 @@ import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import { handleWebhook } from "./controllers/stripePaymentController.js";
 
 const app = express();
 
@@ -19,6 +20,14 @@ app.use(
     origin: allowedOrigins,
     credentials: true,
   }),
+);
+
+// Stripe signs the raw bytes, so this must be registered before express.json()
+// (and before the rate limiter, which would throttle Stripe's retries).
+app.post(
+  "/api/payment/webhook",
+  express.raw({ type: "application/json" }),
+  handleWebhook,
 );
 
 app.use(express.json());

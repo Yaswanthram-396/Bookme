@@ -10,7 +10,6 @@ import { requestEmailOtp, verifyEmailOtp } from "../utils/emailOtp.js";
 import { generateSlots } from "../utils/slotGenerator.js";
 
 import { timeOverlap } from "../utils/overlap.js";
-import { recordMockPayment } from "./paymentController.js";
 
 const getBusinessBySlug = async (slug) => {
   return User.findOne({ slug }).select("-password");
@@ -152,7 +151,6 @@ export const createPublicBooking = async (req, res) => {
       endTime,
       notes,
       emailOtp,
-      paymentMode,
     } = req.body;
 
     if (
@@ -212,8 +210,10 @@ export const createPublicBooking = async (req, res) => {
 
     const requiresPayment = service.price > 0;
 
-    if (requiresPayment && !paymentMode) {
-      return res.status(400).json({ message: "Payment method is required" });
+    if (requiresPayment) {
+      return res.status(402).json({
+        message: "This service requires online payment. Use checkout instead.",
+      });
     }
 
     const otpResult = await verifyEmailOtp({
@@ -254,10 +254,10 @@ export const createPublicBooking = async (req, res) => {
         startTime,
         endTime,
         notes: notes || "",
-        amount: requiresPayment ? Math.round(service.price * 100) : 0,
+        amount: 0,
         payoutStatus: "not_required",
         status: "confirmed",
-        paymentStatus: requiresPayment ? "paid" : "not_required",
+        paymentStatus: "not_required",
         active: true,
         customerCalendarUrl,
       });
@@ -268,10 +268,6 @@ export const createPublicBooking = async (req, res) => {
           .json({ message: "That slot is no longer available" });
       }
       throw createError;
-    }
-
-    if (requiresPayment) {
-      await recordMockPayment({ business, booking, paymentMode });
     }
 
     try {

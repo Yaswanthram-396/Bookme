@@ -8,9 +8,7 @@ import {
   ArrowLeft,
   MapPin,
   IndianRupee,
-  CreditCard,
-  Smartphone,
-  Landmark,
+  Lock,
 } from "lucide-react";
 import {
   getPublicBusiness,
@@ -19,6 +17,7 @@ import {
   verifyPublicBookingOtp,
   createPublicBooking,
 } from "../api/public";
+import { createCheckoutSession } from "../api/payment";
 
 const STEPS = {
   SERVICE: "service",
@@ -28,12 +27,6 @@ const STEPS = {
   PAYMENT: "payment",
   DONE: "done",
 };
-
-const PAYMENT_METHODS = [
-  { value: "card", label: "Card", icon: CreditCard },
-  { value: "upi", label: "UPI", icon: Smartphone },
-  { value: "netbanking", label: "Netbanking", icon: Landmark },
-];
 
 const formatMoney = (amount = 0, currency = "inr") =>
   new Intl.NumberFormat("en-IN", {
@@ -92,12 +85,6 @@ export default function PublicBookingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [confirmedBooking, setConfirmedBooking] = useState(null);
-
-  const [paymentMode, setPaymentMode] = useState("card");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
-  const [upiId, setUpiId] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -220,7 +207,6 @@ export default function PublicBookingPage() {
         endTime: selectedSlot.endTime,
         notes: notes.trim(),
         emailOtp: otp,
-        paymentMode: selectedService?.price > 0 ? paymentMode : undefined,
       });
       setConfirmedBooking(data.booking);
       setStep(STEPS.DONE);
@@ -231,6 +217,33 @@ export default function PublicBookingPage() {
         setSelectedSlot(null);
       }
     } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const startCheckout = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const { data } = await createCheckoutSession({
+        slug,
+        serviceId: selectedService._id,
+        customerName: customerName.trim(),
+        customerEmail: customerEmail.trim().toLowerCase(),
+        date: selectedDate,
+        startTime: selectedSlot.startTime,
+        endTime: selectedSlot.endTime,
+        notes: notes.trim(),
+        emailOtp: otp,
+      });
+      window.location.assign(data.url);
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not start payment");
+      if (err.response?.status === 409) {
+        setStep(STEPS.SLOT);
+        setSelectedSlot(null);
+      }
       setSubmitting(false);
     }
   };
@@ -547,100 +560,10 @@ export default function PublicBookingPage() {
                 </span>
               </p>
 
-              <div className="mb-5 grid grid-cols-3 gap-2.5">
-                {PAYMENT_METHODS.map((method) => (
-                  <button
-                    key={method.value}
-                    type="button"
-                    onClick={() => setPaymentMode(method.value)}
-                    className={`flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3 text-xs font-bold transition ${
-                      paymentMode === method.value
-                        ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                        : "border-slate-200 bg-white text-slate-500 hover:border-indigo-300"
-                    }`}
-                  >
-                    <method.icon className="h-5 w-5" />
-                    {method.label}
-                  </button>
-                ))}
-              </div>
-
-              {paymentMode === "card" && (
-                <div className="space-y-3.5">
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-slate-700">
-                      Card number
-                    </label>
-                    <input
-                      className={inputClass}
-                      value={cardNumber}
-                      onChange={(e) =>
-                        setCardNumber(
-                          e.target.value
-                            .replace(/\D/g, "")
-                            .slice(0, 16)
-                            .replace(/(\d{4})(?=\d)/g, "$1 "),
-                        )
-                      }
-                      placeholder="4242 4242 4242 4242"
-                      maxLength={19}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-slate-700">
-                        Expiry
-                      </label>
-                      <input
-                        className={inputClass}
-                        value={cardExpiry}
-                        onChange={(e) =>
-                          setCardExpiry(
-                            e.target.value
-                              .replace(/\D/g, "")
-                              .slice(0, 4)
-                              .replace(/(\d{2})(?=\d)/, "$1/"),
-                          )
-                        }
-                        placeholder="MM/YY"
-                        maxLength={5}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-slate-700">
-                        CVV
-                      </label>
-                      <input
-                        className={inputClass}
-                        value={cardCvv}
-                        onChange={(e) =>
-                          setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 3))
-                        }
-                        placeholder="123"
-                        maxLength={3}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {paymentMode === "upi" && (
-                <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-slate-700">UPI ID</label>
-                  <input
-                    className={inputClass}
-                    value={upiId}
-                    onChange={(e) => setUpiId(e.target.value)}
-                    placeholder="you@upi"
-                  />
-                </div>
-              )}
-
-              {paymentMode === "netbanking" && (
-                <p className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
-                  You'll be redirected to your bank to complete payment.
-                </p>
-              )}
+              <p className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                <Lock className="h-4 w-4 shrink-0" />
+                You'll be redirected to Stripe's secure page to pay by card.
+              </p>
 
               {error && (
                 <p className="mt-4 text-sm font-semibold text-red-600">{error}</p>
@@ -648,16 +571,16 @@ export default function PublicBookingPage() {
 
               <button
                 type="button"
-                onClick={confirmBooking}
+                onClick={startCheckout}
                 disabled={submitting}
                 className="mt-6 h-[52px] w-full rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-base font-extrabold text-white shadow-[0_16px_32px_rgba(99,102,241,0.25)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting
-                  ? "Processing payment..."
+                  ? "Redirecting to payment..."
                   : `Pay ${formatMoney(selectedService.price, "inr")}`}
               </button>
               <p className="mt-3 text-center text-[11px] text-slate-400">
-                This is a test/mock payment — no real money is charged.
+                Payments are processed securely by Stripe.
               </p>
             </div>
           )}

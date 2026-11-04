@@ -7,6 +7,7 @@ import publicRoutes from "./publicroutes.js";
 import adminRoutes from "./adminRoutes.js";
 import bookingRoutes from "./bookingroutes.js";
 import paymentRoutes from "./paymentroutes.js";
+import stripePaymentRoutes from "./stripePaymentRoutes.js";
 
 const router = express.Router();
 
@@ -25,5 +26,6 @@ router.use("/public", publicRoutes);
 router.use("/admin", adminRoutes);
 router.use("/bookings", bookingRoutes);
 router.use("/payments", paymentRoutes);
+router.use("/payment", stripePaymentRoutes);
 
 export default router;
